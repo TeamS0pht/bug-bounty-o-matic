@@ -53,7 +53,7 @@ function scan_domain {
     fi
 
     echo "Sending Discord webhook."
-    echo "$webhook_message" | python3 $PWD/discord-webhook.py "$WEBHOOK_URL" "$webhook_title" $PWD/valid-subdomains/$domain/$date
+    echo "$webhook_message" | sed "s|$PWD/valid-subdomains/||g" | python3 $PWD/discord-webhook.py "$WEBHOOK_URL" "$webhook_title" $PWD/valid-subdomains/$domain/$date
 
 }
 

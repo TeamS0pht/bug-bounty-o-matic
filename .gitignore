@@ -1,1 +1,5 @@
 *.config
+domains
+
+passive-subdomains
+valid-subdomains

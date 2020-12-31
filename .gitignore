@@ -1,5 +1,7 @@
 *.config
+
 domains
+out-of-scope
 
 passive-subdomains
 valid-subdomains

@@ -29,6 +29,14 @@ function scan_domain {
     echo 'Validating subdomains with dnsx...'
     valid_subdomains=`echo "$passive_subdomains" | dnsx -silent -r 1.1.1.1,1.0.0.1 | sort`
     echo "Found a total of $(wc -l <<< $valid_subdomains) valid subdomains."
+
+    if [ -f $PWD/out-of-scope ] && [ -r $PWD/out-of-scope ]; then
+        echo "Removing $(echo "$valid_subdomains" | grep -f $PWD/out-of-scope | wc -l) out of scope domains."
+        valid_subdomains=`echo "$valid_subdomains" | grep -f $PWD/out-of-scope -v`
+    elif [ -f $PWD/out-of-scope ]; then
+        echo "Out of scope file isn't readable, can't filter out domains."
+    fi
+
     echo "$valid_subdomains" > $PWD/valid-subdomains/$domain/$date
 
     previous_file=`ls -ltr $PWD/valid-subdomains/$domain/ | sed 'x;$!d' | awk '{print $9}'`
@@ -36,7 +44,7 @@ function scan_domain {
     if [ "$previous_file" = "" ]; then
         webhook_title="(NEW) Subdomains for $domain domain."
         webhook_message=`diff -u /dev/null $PWD/valid-subdomains/$domain/$date`
-    elif ! cmp -s $PWD/valid-subdomains/$domain/$previous_file $PWD/valid-subdomains/$domain/$date; then
+    elif cmp -s $PWD/valid-subdomains/$domain/$previous_file $PWD/valid-subdomains/$domain/$date; then
         echo "No change in subdomains, not sending webhook."
         return
     else

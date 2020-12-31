@@ -1,4 +1,4 @@
-import sys, json, requests
+import sys, pathlib, json, requests
 
 class Webhook:
     def __init__(self, url):
@@ -15,7 +15,9 @@ class Webhook:
         return len(self.data['embeds'])
 
     def add_file(self, file):
-        self.files['_{}'.format(file)] = (file, open(file, 'rb').read())
+        path = pathlib.PurePath(file)
+        filename = "%s-%s" % (path.parent.name, path.name)
+        self.files['_{}'.format(filename)] = (filename, open(file, 'rb').read())
 
     def send(self):
         if not self.files:

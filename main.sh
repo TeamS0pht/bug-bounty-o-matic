@@ -1,5 +1,15 @@
 #!/bin/bash
+
 date=`date '+%d-%m-%y'`
+
+config=$1
+domains=$2
+out_of_scope=$3
+
+if [ "$#" -lt 2 ]; then
+    echo "Correct usage: $0 <config file> <list of domains> [list of out of scope patterns]"
+    exit
+fi
 
 function scan_domain {
     domain=$1
@@ -30,10 +40,10 @@ function scan_domain {
     valid_subdomains=`echo "$passive_subdomains" | dnsx -silent -r 1.1.1.1,1.0.0.1 | sort`
     echo "Found a total of $(wc -l <<< $valid_subdomains) valid subdomains."
 
-    if [ -f $PWD/out-of-scope ] && [ -r $PWD/out-of-scope ]; then
-        echo "Removing $(echo "$valid_subdomains" | grep -f $PWD/out-of-scope | wc -l) out of scope domains."
-        valid_subdomains=`echo "$valid_subdomains" | grep -f $PWD/out-of-scope -v`
-    elif [ -f $PWD/out-of-scope ]; then
+    if [ "$out_of_scope" != "" ] && [ -f $out_of_scope ] && [ -r $out_of_scope ]; then
+        echo "Removing $(echo "$valid_subdomains" | grep -f $out_of_scope | wc -l) out of scope domains."
+        valid_subdomains=`echo "$valid_subdomains" | grep -f $out_of_scope -v`
+    elif [ -f $out_of_scope ]; then
         echo "Out of scope file isn't readable, can't filter out domains."
     fi
 
@@ -58,12 +68,12 @@ function scan_domain {
 }
 
 # Check existence of domains and .config files
-if [ ! -r $PWD/.config ]; then
+if [ ! -r $config ]; then
     echo "Config file doesn't exist or isn't readable."
     exit
 fi
 
-if [ ! -r $PWD/domains ]; then
+if [ ! -r $domains ]; then
     echo "Domains file doesn't exist or isn't readable."
     exit
 fi
@@ -79,8 +89,8 @@ if [ ! -d $PWD/valid-subdomains ]; then
 fi
 
 # Load config, read list of domains and scan each one
-. $PWD/.config
+. $config
 
 while read domain; do
     scan_domain $domain;
-done < $PWD/domains
+done < $domains

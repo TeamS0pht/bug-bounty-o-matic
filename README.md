@@ -1,5 +1,12 @@
 # bug-bounty-o-matic
 
+Looks for a `domains` file with a list of root domains to scan, each on a new line:
+```
+example.com
+example-dev.com
+example-example.example
+```
+
 Looks for a `.config` file with a Discord webhook URL:
 ```bash
 WEBHOOK_URL='URL'
